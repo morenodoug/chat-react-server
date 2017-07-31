@@ -5,9 +5,20 @@ const databaseConnection = {
     user: 'postgres',
     password: '12345'
 };
+
+// jsonwebtoken
 const secret = 'hamburguesas';
+
+const optionsJWT = {
+    expiresIn: Math.floor(Date.now() / 1000) + (60 * 60),
+}
+
+//bcrypt
+const saltRounds = 10;
 
 module.exports = {
     databaseConnection: databaseConnection,
-    secret: secret
+    secret: secret,
+    optionsJWT: optionsJWT,
+    saltRounds: saltRounds
 }
