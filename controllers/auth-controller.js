@@ -11,6 +11,7 @@ let bcrypt = require('bcrypt');
 let jsonwebtoken = require('jsonwebtoken');
 
 function signup(req, res, next) {
+    console.log(req.body);
     if (_.isUndefined(req.body.email)) {
         return res.status(400).json({
             error: 'proporcione email'
@@ -84,8 +85,6 @@ function signin(req, res, next) {
         }
         console.log(data[0].password);
 
-
-
         bcrypt.compare(req.body.password, data[0].password).
         then((response) => {
             console.log(response);
@@ -115,10 +114,6 @@ function signin(req, res, next) {
         console.log(`cae en error ${err}`);
         return res.status(500).json({ error: "server error" });
     });
-
-
-
-
 
 }
 
