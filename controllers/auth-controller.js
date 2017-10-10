@@ -33,7 +33,7 @@ function signup(req, res, next) {
     then((usedEmail) => {
 
         if (usedEmail) {
-            return res.status(400).json({ error: 'el email ya se encuentra en uso' });
+            return res.status(409).json({ error: 'el email ya se encuentra en uso' });
         }
         bcrypt.hash(req.body.password, config.saltRounds).then(function(hash) {
             // Store hash in your password DB. 
@@ -48,13 +48,13 @@ function signup(req, res, next) {
                         console.log(err)
                         return res.status(500).json({ error: "server error" })
                     }
-                    return res.status(201).json({ token: token });
+                    return res.status(201).json({ token: token, name: req.body.name, email: req.body.email, id: result.id });
                 });
             }).catch((err) => {
                 console.log(err);
                 if (err.code === '23505' && err.constraint === 'user_email_key') {
                     console.log('duplicado');
-                    return res.status(400).json({ error: 'email se encuentra en uso' });
+                    return res.status(409).json({ error: 'email se encuentra en uso' });
                 }
             });
         });
@@ -78,22 +78,24 @@ function signin(req, res, next) {
         });
     }
 
-    db.any('SELECT id, email, password FROM "user" WHERE email=$1', [req.body.email]).
+    db.any('SELECT id, email, name, password FROM "user" WHERE email=$1', [req.body.email]).
     then((data) => {
         if (data.length === 0) {
             return res.status(401).json({ error: " email o password incorrecto" });
         }
-        console.log(data[0].password);
+        // console.log(data[0].password);
+        let user = Object.assign({}, data[0]);
+        // console.log(user);
 
         bcrypt.compare(req.body.password, data[0].password).
         then((response) => {
             console.log(response);
 
             if (!response)
-                return res.status(401).json({ error: "meail o possword incorrecto" });
+                return res.status(401).json({ error: "email o possword incorrecto" });
 
             let payload = {
-                userId: data[0].id
+                userId: user.id
             }
 
             jsonwebtoken.sign(payload, config.secret, config.optionsJWT, (err, token) => {
@@ -101,7 +103,7 @@ function signin(req, res, next) {
                     console.error(err)
                     return res.status(500).json({ error: "server error" })
                 }
-                return res.status(201).json({ token: token });
+                return res.status(200).json({ token: token, name: user.name, email: user.email, id: user.id });
             });
 
         }).
