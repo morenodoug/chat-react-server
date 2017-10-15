@@ -50,7 +50,13 @@ function usedEmail(email) {
 
 
 
-
+function usersConected(users) {
+    let usersData = {}
+    for (user in users) {
+        usersData[[user].id] = users[user]
+    }
+    return usersData;
+}
 
 
 module.exports = {

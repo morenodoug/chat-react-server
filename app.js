@@ -7,9 +7,13 @@ var bodyParser = require('body-parser');
 var authMiddleware = require('./middlewares/auth');
 var cors = require('cors');
 var index = require('./routes/index');
+
+
 //querys 
 let db = require('./querys');
 
+//inicializa el socket 
+const io = require('socket.io')();
 
 var app = express();
 
@@ -25,12 +29,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-
-// app.use(function(req, res, next) {
-//     res.header("Access-Control-Allow-Origin", "*");
-//     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-//     next();
-// });
+//permite el servicio cors, agregando las cabaceras necesarias a las respuestas 
 app.use(cors())
 app.use('/', index);
 app.use(authMiddleware);
@@ -52,6 +51,38 @@ app.post('/my-profile', function(req, res) {
         });
 
 });
+
+let users = {};
+io.on('connection', (client) => {
+    // here you can start emitting events to the client
+
+    client.on('connect-to-chat', (user) => {
+        //retorna oobjeto con usuarios conectados al chat
+        client.emit('users-connected', users);
+        //almacena usuario
+        users[client.id] = user;
+        //emite a los otros usuarios que un nuevo usuario se ha conectado
+        client.broadcast.emit('new-user-connected', {
+            [client.id]: user
+        });
+
+
+    })
+    client.on('disconnect', () => {
+        io.broadcast.emit('user-disconnected', client.id)
+        delete users[client.id]
+        console.log('USUARIO DESCONECTADO');
+        console.log(users);
+
+    })
+
+
+});
+
+
+const port = 8000;
+io.listen(port);
+console.log('socket listening on port ', port);
 
 
 // catch 404 and forward to error handler
