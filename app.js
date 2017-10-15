@@ -69,7 +69,7 @@ io.on('connection', (client) => {
 
     })
     client.on('disconnect', () => {
-        io.broadcast.emit('user-disconnected', client.id)
+        client.broadcast.emit('user-disconnected', client.id)
         delete users[client.id]
         console.log('USUARIO DESCONECTADO');
         console.log(users);
