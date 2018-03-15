@@ -74,7 +74,21 @@ io.on('connection', (client) => {
         console.log('USUARIO DESCONECTADO');
         console.log(users);
 
-    })
+    });
+
+    client.on('send-message', (message) => {
+        console.log(users[client.id]);
+        console.log(`${users[client.id]}
+        message: ${message}
+        `);
+        let newMessage = {
+            userInfo: users[client.id],
+            message: message
+        };
+        io.emit('receive-message', newMessage)
+
+    });
+
 
 
 });
